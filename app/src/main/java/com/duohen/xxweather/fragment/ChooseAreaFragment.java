@@ -2,8 +2,10 @@ package com.duohen.xxweather.fragment;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.duohen.xxweather.R;
+import com.duohen.xxweather.activity.WeatherActivity;
 import com.duohen.xxweather.db.City;
 import com.duohen.xxweather.db.County;
 import com.duohen.xxweather.db.Province;
@@ -87,12 +90,20 @@ public class ChooseAreaFragment extends Fragment {
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d("xinx", "onItemClick  mCurrentLevel: "+mCurrentLevel);
                 if (mCurrentLevel == LEVEL_PROVINCE) {
                     mSelectedProvince = mProvinceList.get(i);
                     queryCities();
                 } else if (mCurrentLevel == LEVEL_CITY) {
                     mSelectedCity = mCityList.get(i);
                     queryCounties();
+                } else if (mCurrentLevel == LEVEL_COUNTY) {
+                    String weatherId = mCountyList.get(i).getWeatherId();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    Log.d("xinx", "onItemClick  intent: "+intent);
+                    intent.putExtra("weather_id", weatherId);
+                    getActivity().startActivity(intent);
+                    //getActivity().finish();
                 }
             }
         });
