@@ -11,11 +11,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.duohen.xxweather.R;
 import com.duohen.xxweather.gson.Forecast;
 import com.duohen.xxweather.gson.Weather;
@@ -33,6 +35,7 @@ import okhttp3.Response;
  */
 
 public class WeatherActivity extends Activity {
+    private ImageView mBingPicImg;
     private ScrollView mWeatherLayout;
     private TextView mTitleCity;
     private TextView mTitleUpdateTime;
@@ -50,6 +53,7 @@ public class WeatherActivity extends Activity {
         super.onCreate(savedInstanceState);
         Log.d("xinx", "onCreate");
         setContentView(R.layout.activity_weather);
+
 
         mWeatherLayout = (ScrollView) findViewById(R.id.weather_layout);
         mTitleCity = (TextView) findViewById(R.id.title_city);
@@ -74,6 +78,14 @@ public class WeatherActivity extends Activity {
             Log.d("xinx", "onCreate  weatherId: "+weatherId);
             mWeatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(weatherId);
+        }
+
+        mBingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
+        String bingPicImg = prefs.getString("bing_pic", null);
+        if(bingPicImg != null) {
+            Glide.with(this).load(bingPicImg).into(mBingPicImg);
+        } else {
+            loadBingPic();
         }
     }
 
@@ -171,5 +183,29 @@ public class WeatherActivity extends Activity {
         mCarWashText.setText(carWash);
         mSportText.setText(sport);
         mWeatherLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void loadBingPic() {
+        String requestBingPic = "http://guolin.tech/api/bing_pic";
+        HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                final String bingPic = response.body().string();
+                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+                editor.putString("bing_pic", bingPic);
+                editor.apply();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Glide.with(WeatherActivity.this).load(bingPic).into(mBingPicImg);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
