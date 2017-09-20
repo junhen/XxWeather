@@ -140,7 +140,6 @@ public class WeatherActivity extends Activity {
     @Override
     public void onBackPressed() {
         if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            // TODO
             Log.d(TAG, "xinx    onBackPressed");
             mLocalBroadcastManager.sendBroadcast(new Intent("back"));
             return;
@@ -150,9 +149,8 @@ public class WeatherActivity extends Activity {
 
     //根据天气id请求城市天气信息
     public void requestWeather(String weatherId) {
-        //此处需要增加key
-        // TODO
-        String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=22f66a59458d4a949f1d5fe1b5c23109";
+        //String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=bc0418b57b2d4918819d3974ac1285d9";
+        String weatherUrl = "https://free-api.heweather.com/v5/weather?city=" + weatherId + "&key=22f66a59458d4a949f1d5fe1b5c23109";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
