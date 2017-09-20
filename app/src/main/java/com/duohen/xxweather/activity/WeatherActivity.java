@@ -1,6 +1,7 @@
 package com.duohen.xxweather.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -27,6 +28,7 @@ import com.bumptech.glide.Glide;
 import com.duohen.xxweather.R;
 import com.duohen.xxweather.gson.Forecast;
 import com.duohen.xxweather.gson.Weather;
+import com.duohen.xxweather.service.AutoUpdateService;
 import com.duohen.xxweather.util.HttpUtil;
 import com.duohen.xxweather.util.JsonUtil;
 
@@ -97,6 +99,9 @@ public class WeatherActivity extends Activity {
             }
         });
 
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
         Log.d("xinx", "onCreate  weatherString: "+weatherString);
@@ -146,6 +151,7 @@ public class WeatherActivity extends Activity {
                             editor.putString("weather", responseText);
                             editor.apply();
                             showWeatherInfo(weather);
+                            mWeatherId = weather.basic.weatherId;
                         } else  {
                             Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
@@ -211,6 +217,9 @@ public class WeatherActivity extends Activity {
                     "    weather.aqi.city.pm25: "+weather.aqi.city.pm25);
             mAqiText.setText(weather.aqi.city.aqi);
             mPm25Text.setText(weather.aqi.city.pm25);
+        } else {
+            mAqiText.setText("null");
+            mPm25Text.setText("null");
         }
         String comfort = "舒适度： "+weather.suggestion.comfort.info;
         String carWash = "洗车指数： "+weather.suggestion.carWash.info;
