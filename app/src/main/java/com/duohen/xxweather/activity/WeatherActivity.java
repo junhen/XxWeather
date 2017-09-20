@@ -9,10 +9,14 @@ import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -49,6 +53,13 @@ public class WeatherActivity extends Activity {
     private TextView mComfortText;
     private TextView mCarWashText;
     private TextView mSportText;
+    private String mWeatherId;
+    private Button mNavBtn;
+
+    public SwipeRefreshLayout mSwipeRefresh;
+
+    public DrawerLayout mDrawerLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,18 +84,39 @@ public class WeatherActivity extends Activity {
         mCarWashText = (TextView) findViewById(R.id.car_wash_text);
         mSportText = (TextView) findViewById(R.id.sport_text);
 
+        mSwipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+        mSwipeRefresh.setColorSchemeResources(R.color.colorPrimary);
+
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mNavBtn = (Button) findViewById(R.id.nav_button);
+        mNavBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDrawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
         Log.d("xinx", "onCreate  weatherString: "+weatherString);
-        if(false/*weatherString != null*/) {
+        if(weatherString != null) {
             Weather weather = JsonUtil.handleWeatherResponse(weatherString);
+            mWeatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
         } else {
-            String weatherId = getIntent().getStringExtra("weather_id");
-            Log.d("xinx", "onCreate  weatherId: "+weatherId);
+            mWeatherId = getIntent().getStringExtra("weather_id");
+            Log.d("xinx", "onCreate  mWeatherId: "+mWeatherId);
             mWeatherLayout.setVisibility(View.INVISIBLE);
-            requestWeather(weatherId);
+            requestWeather(mWeatherId);
         }
+
+        mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(mWeatherId);
+            }
+        });
 
         mBingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
         String bingPicImg = prefs.getString("bing_pic", null);
@@ -96,7 +128,7 @@ public class WeatherActivity extends Activity {
     }
 
     //根据天气id请求城市天气信息
-    private void requestWeather(String weatherId) {
+    public void requestWeather(String weatherId) {
         //此处需要增加key
         // TODO
         String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=bc0418b57b2d4918819d3974ac1285d9";
@@ -117,6 +149,7 @@ public class WeatherActivity extends Activity {
                         } else  {
                             Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
+                        mSwipeRefresh.setRefreshing(false);
                     }
                 });
             }
@@ -129,6 +162,7 @@ public class WeatherActivity extends Activity {
                     @Override
                     public void run() {
                         Toast.makeText(WeatherActivity.this, "获取天气信息失败!", Toast.LENGTH_SHORT).show();
+                        mSwipeRefresh.setRefreshing(false);
                     }
                 });
 
