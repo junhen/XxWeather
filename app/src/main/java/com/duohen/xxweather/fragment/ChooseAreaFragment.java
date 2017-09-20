@@ -3,9 +3,13 @@ package com.duohen.xxweather.fragment;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.app.WallpaperManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +45,7 @@ import okhttp3.Response;
  */
 
 public class ChooseAreaFragment extends Fragment {
+    public static final String TAG = "ChooseAreaFragment";
     public static final int LEVEL_PROVINCE = 0;
     public static final int LEVEL_CITY = 1;
     public static final int LEVEL_COUNTY = 2;
@@ -70,6 +75,25 @@ public class ChooseAreaFragment extends Fragment {
 
     //当前选中级别
     private int mCurrentLevel;
+
+    //本地广播
+    private BroadcastReceiver mBroadcastReceiver= new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "xinx    mBroadcastReceiver  onReceive   action: "+intent.getAction());
+            if (intent.getAction().equals("back")) {
+                if (mCurrentLevel == LEVEL_COUNTY) {
+                    queryCities();
+                } else if (mCurrentLevel == LEVEL_CITY) {
+                    queryProvinces();
+                } else if (mCurrentLevel == LEVEL_PROVINCE) {
+                    if(getActivity() instanceof WeatherActivity) {
+                        ((WeatherActivity)getActivity()).mDrawerLayout.closeDrawers();
+                    }
+                }
+            }
+        }
+    };
 
     @Nullable
     @Override
@@ -127,6 +151,21 @@ public class ChooseAreaFragment extends Fragment {
             }
         });
         queryProvinces();
+    }
+
+    @Override
+    public void onResume() {
+        //注册本地广播
+        Log.d(TAG, "xinx    registerReceiver");
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(mBroadcastReceiver, new IntentFilter("back"));
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(TAG, "xinx    unregisterReceiver");
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mBroadcastReceiver);
+        super.onPause();
     }
 
     private void queryProvinces() {

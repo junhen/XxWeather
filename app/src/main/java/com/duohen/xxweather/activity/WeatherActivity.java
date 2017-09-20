@@ -10,6 +10,7 @@ import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -43,6 +44,8 @@ import okhttp3.Response;
  */
 
 public class WeatherActivity extends Activity {
+
+    private static final String TAG = "WeatherActivity";
     private ImageView mBingPicImg;
     private ScrollView mWeatherLayout;
     private TextView mTitleCity;
@@ -61,6 +64,7 @@ public class WeatherActivity extends Activity {
     public SwipeRefreshLayout mSwipeRefresh;
 
     public DrawerLayout mDrawerLayout;
+    public LocalBroadcastManager mLocalBroadcastManager;
 
 
     @Override
@@ -130,13 +134,25 @@ public class WeatherActivity extends Activity {
         } else {
             loadBingPic();
         }
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            // TODO
+            Log.d(TAG, "xinx    onBackPressed");
+            mLocalBroadcastManager.sendBroadcast(new Intent("back"));
+            return;
+        }
+        super.onBackPressed();
     }
 
     //根据天气id请求城市天气信息
     public void requestWeather(String weatherId) {
         //此处需要增加key
         // TODO
-        String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=bc0418b57b2d4918819d3974ac1285d9";
+        String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=22f66a59458d4a949f1d5fe1b5c23109";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
